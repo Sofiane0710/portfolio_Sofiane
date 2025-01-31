@@ -4,9 +4,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatLog = document.getElementById('chat-log');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
+
     const API_URL = "https://api.openai.com/v1/chat/completions";
 
-const sendMessage = async () => {
+    const API_KEY = "";
+
+    fetch('api-key.json')
+    .then(response => response.json())
+    .then(data => {
+        const API_KEY = data.OPENAI_API_KEY;
+    })
+    .catch(error => console.error("Erreur : Impossible de récupérer la clé API", error));
+
+
+    const sendMessage = async () => {
     const userMessage = userInput.value.trim();
     if (!userMessage) return;
 

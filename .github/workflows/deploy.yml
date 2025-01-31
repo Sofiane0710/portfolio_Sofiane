@@ -15,12 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Inject API Key
+      - name: Inject API Key (without commit)
         run: |
-          echo "const API_KEY = '${{ secrets.OPENAI_API_KEY }}';" > script.js
+          echo '{ "OPENAI_API_KEY": "${{ secrets.OPENAI_API_KEY }}" }' > api-key.json
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: .
+          clean: true
