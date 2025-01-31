@@ -235,7 +235,7 @@ const sendMessage = () => {
     };
 
     // Fonction pour gérer l'envoi de messages (gardée)
-    const sendMessage = () => {
+    /*const sendMessage = () => {
         const userMessage = userInput.value.trim();
         if (!userMessage) return;
 
@@ -253,7 +253,7 @@ const sendMessage = () => {
         // Effacer le champ de saisie
         userInput.value = "";
         userInput.style.height = "auto";
-    };
+    };*/
 
     // Écouteurs d'événements pour envoyer un message
     sendBtn.addEventListener('click', sendMessage);
