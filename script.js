@@ -4,7 +4,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatLog = document.getElementById('chat-log');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
-    const API_KEY = "__OPENAI_API_KEY__";
+    const API_URL = "https://api.openai.com/v1/chat/completions";
+
+const sendMessage = async () => {
+    const userMessage = userInput.value.trim();
+    if (!userMessage) return;
+
+    // Ajouter le message utilisateur
+    const outgoingChat = createConversation(userMessage, "outgoing");
+    chatLog.appendChild(outgoingChat);
+
+    // Ajouter le message en attente de l'IA
+    const incomingChat = createConversation("En cours d'écriture...", "incoming");
+    chatLog.appendChild(incomingChat);
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${API_KEY}`, // Clé injectée automatiquement
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [{ role: "user", content: userMessage }],
+            }),
+        });
+
+        const data = await response.json();
+        incomingChat.innerHTML = `<p style="color: white;">IA : ${data.choices[0].message.content}</p>`;
+    } catch (error) {
+        incomingChat.innerHTML = '<p style="color: red;">Erreur : Impossible de récupérer une réponse.</p>';
+    }
+};
+
     
     let isDarkTheme = true;
 
