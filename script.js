@@ -7,47 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_URL = "https://api.openai.com/v1/chat/completions";
 
-    const API_KEY = "";
+    let API_KEY = ""; // Déclarer API_KEY globalement
 
+// Charger la clé API depuis le fichier JSON
     fetch('api-key.json')
     .then(response => response.json())
     .then(data => {
-        const API_KEY = data.OPENAI_API_KEY;
+        API_KEY = data.OPENAI_API_KEY;
+        console.log("✅ Clé API chargée :", API_KEY);
     })
-    .catch(error => console.error("Erreur : Impossible de récupérer la clé API", error));
-
-
-    const sendMessage = async () => {
-    const userMessage = userInput.value.trim();
-    if (!userMessage) return;
-
-    // Ajouter le message utilisateur
-    const outgoingChat = createConversation(userMessage, "outgoing");
-    chatLog.appendChild(outgoingChat);
-
-    // Ajouter le message en attente de l'IA
-    const incomingChat = createConversation("En cours d'écriture...", "incoming");
-    chatLog.appendChild(incomingChat);
-
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${API_KEY}`, // Clé injectée automatiquement
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content: userMessage }],
-            }),
-        });
-
-        const data = await response.json();
-        incomingChat.innerHTML = `<p style="color: white;">IA : ${data.choices[0].message.content}</p>`;
-    } catch (error) {
-        incomingChat.innerHTML = '<p style="color: red;">Erreur : Impossible de récupérer une réponse.</p>';
-    }
-};
+    .catch(error => console.error("❌ Erreur : Impossible de récupérer la clé API", error));
+    
 
     
     let isDarkTheme = true;
@@ -195,33 +165,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fonction pour récupérer une réponse de l'API OpenAI
     const getResponse = async (userMessage, incomingChat) => {
+        if (!API_KEY) {
+            console.error("❌ Erreur : Clé API non chargée.");
+            incomingChat.innerHTML = '<p style="color: red;">Erreur : Clé API non disponible.</p>';
+            return;
+        }
+
         const API_URL = "https://api.openai.com/v1/chat/completions";
-        const requestOptions = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${API_KEY}`,
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content: userMessage }],
-            }),
-        };
 
         try {
-            const res = await fetch(API_URL, requestOptions);
-            const data = await res.json();
-            const aiMessage = data.choices[0].message.content.trim();
-            incomingChat.innerHTML = `<p style="color: white;">IA : ${aiMessage}</p>`;
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${API_KEY}`,
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: userMessage }],
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur API : ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.choices && data.choices.length > 0) {
+                incomingChat.innerHTML = `<p style="color: white;">IA : ${data.choices[0].message.content.trim()}</p>`;
+            } else {
+                throw new Error("Réponse invalide de l'API.");
+            }
         } catch (error) {
-            incomingChat.innerHTML =
-                '<p style="color: red;">Erreur : Impossible de récupérer une réponse. Réessayez plus tard.</p>';
+            console.error("❌ Erreur lors de la requête OpenAI :", error);
+            incomingChat.innerHTML = '<p style="color: red;">Erreur : Impossible de récupérer une réponse.</p>';
         } finally {
             chatLog.scrollTop = chatLog.scrollHeight;
         }
     };
 
-    // Fonction pour gérer l'envoi de messages
+    // Fonction pour gérer l'envoi de messages (gardée)
     const sendMessage = () => {
         const userMessage = userInput.value.trim();
         if (!userMessage) return;
@@ -256,8 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.style.height = "auto";
         userInput.style.height = `${userInput.scrollHeight}px`;
     });
-
-
 });
 
  
