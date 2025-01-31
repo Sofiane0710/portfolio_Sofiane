@@ -7,45 +7,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_URL = "https://api.openai.com/v1/chat/completions";
 
-    let API_KEY = ""; // Déclare globalement la clé API
+    let API_KEY = ""; // Déclarer API_KEY globalement
 
-// Charger la clé API depuis api-key.json dans GitHub Actions
-fetch('api-key.json')
-  .then(response => response.json())
-  .then(data => {
-    API_KEY = data.OPENAI_API_KEY;
-    console.log("✅ Clé API chargée :", API_KEY);
-  })
-  .catch(error => {
-    console.error("❌ Erreur : Impossible de récupérer la clé API", error);
-    alert("Erreur : Clé API non disponible.");
-  });
-
-// Vérifie si la clé est disponible avant d'envoyer la requête
-const sendMessage = () => {
-  if (!API_KEY) {
-    alert("Erreur : Clé API non disponible.");
-    return;
-  }
-
-  const userMessage = userInput.value.trim();
-  if (!userMessage) return;
-
-  // Ajouter le message utilisateur
-  const outgoingChat = createConversation(userMessage, "outgoing");
-  chatLog.appendChild(outgoingChat);
-
-  // Ajouter le message en attente de l'IA
-  const incomingChat = createConversation("En cours d'écriture...", "incoming");
-  chatLog.appendChild(incomingChat);
-
-  // Appeler l'API OpenAI pour obtenir une réponse
-  getResponse(userMessage, incomingChat);
-
-  // Effacer le champ de saisie
-  userInput.value = "";
-  userInput.style.height = "auto";
-};
+// Charger la clé API depuis le fichier JSON
+    fetch('api-key.json')
+    .then(response => response.json())
+    .then(data => {
+        API_KEY = data.OPENAI_API_KEY;
+        console.log("✅ Clé API chargée :", API_KEY);
+    })
+    .catch(error => console.error("❌ Erreur : Impossible de récupérer la clé API", error));
     
 
     
@@ -199,9 +170,9 @@ const sendMessage = () => {
             incomingChat.innerHTML = '<p style="color: red;">Erreur : Clé API non disponible.</p>';
             return;
         }
-
+    
         const API_URL = "https://api.openai.com/v1/chat/completions";
-
+    
         try {
             const response = await fetch(API_URL, {
                 method: "POST",
@@ -214,13 +185,13 @@ const sendMessage = () => {
                     messages: [{ role: "user", content: userMessage }],
                 }),
             });
-
+    
             if (!response.ok) {
                 throw new Error(`Erreur API : ${response.statusText}`);
             }
-
+    
             const data = await response.json();
-
+    
             if (data.choices && data.choices.length > 0) {
                 incomingChat.innerHTML = `<p style="color: white;">IA : ${data.choices[0].message.content.trim()}</p>`;
             } else {
@@ -233,9 +204,10 @@ const sendMessage = () => {
             chatLog.scrollTop = chatLog.scrollHeight;
         }
     };
+    
 
-    // Fonction pour gérer l'envoi de messages (gardée)
-    /*const sendMessage = () => {
+    // Fonction pour gérer l'envoi de messages
+    const sendMessage = () => {
         const userMessage = userInput.value.trim();
         if (!userMessage) return;
 
@@ -253,7 +225,7 @@ const sendMessage = () => {
         // Effacer le champ de saisie
         userInput.value = "";
         userInput.style.height = "auto";
-    };*/
+    };
 
     // Écouteurs d'événements pour envoyer un message
     sendBtn.addEventListener('click', sendMessage);
@@ -269,6 +241,8 @@ const sendMessage = () => {
         userInput.style.height = "auto";
         userInput.style.height = `${userInput.scrollHeight}px`;
     });
+
+
 });
 
  
