@@ -7,16 +7,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_URL = "https://api.openai.com/v1/chat/completions";
 
-    let API_KEY = ""; // Déclarer API_KEY globalement
+    let API_KEY = ""; // Déclare globalement la clé API
 
-// Charger la clé API depuis le fichier JSON
-    fetch('api-key.json')
-    .then(response => response.json())
-    .then(data => {
-        API_KEY = data.OPENAI_API_KEY;
-        console.log("✅ Clé API chargée :", API_KEY);
-    })
-    .catch(error => console.error("❌ Erreur : Impossible de récupérer la clé API", error));
+// Charger la clé API depuis api-key.json dans GitHub Actions
+fetch('api-key.json')
+  .then(response => response.json())
+  .then(data => {
+    API_KEY = data.OPENAI_API_KEY;
+    console.log("✅ Clé API chargée :", API_KEY);
+  })
+  .catch(error => {
+    console.error("❌ Erreur : Impossible de récupérer la clé API", error);
+    alert("Erreur : Clé API non disponible.");
+  });
+
+// Vérifie si la clé est disponible avant d'envoyer la requête
+const sendMessage = () => {
+  if (!API_KEY) {
+    alert("Erreur : Clé API non disponible.");
+    return;
+  }
+
+  const userMessage = userInput.value.trim();
+  if (!userMessage) return;
+
+  // Ajouter le message utilisateur
+  const outgoingChat = createConversation(userMessage, "outgoing");
+  chatLog.appendChild(outgoingChat);
+
+  // Ajouter le message en attente de l'IA
+  const incomingChat = createConversation("En cours d'écriture...", "incoming");
+  chatLog.appendChild(incomingChat);
+
+  // Appeler l'API OpenAI pour obtenir une réponse
+  getResponse(userMessage, incomingChat);
+
+  // Effacer le champ de saisie
+  userInput.value = "";
+  userInput.style.height = "auto";
+};
     
 
     
